@@ -1,0 +1,495 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#fff7fa">
+<title>你的危险魅力是什么？</title>
+<style>
+:root{
+  --pink-bg:#fff7fa;
+  --pink-soft:#faeef2;
+  --pink-line:#ead9df;
+  --rose:#b9415c;
+  --rose-light:#e9a0b2;
+  --ink:#1a1518;
+  --muted:#8c7c84;
+  --dark:#181013;
+  --dark2:#21171b;
+  --dark-line:#3a2a30;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;background:var(--pink-bg);color:var(--ink)}
+body{
+  font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Hiragino Sans GB",
+  "Microsoft YaHei",Arial,sans-serif;
+  -webkit-font-smoothing:antialiased;
+}
+button{font:inherit}
+.app{max-width:780px;margin:0 auto;min-height:100vh;background:var(--pink-bg)}
+
+.top{
+  height:76px;background:#fff;border-bottom:1px solid #eee7ea;
+  display:flex;align-items:center;justify-content:center;position:sticky;top:0;z-index:20;
+}
+.top-title{font-size:19px;font-weight:500;letter-spacing:.02em}
+.top-left,.top-right{
+  position:absolute;top:0;height:76px;display:flex;align-items:center;
+  background:none;border:0;color:#282228;cursor:pointer;
+}
+.top-left{left:14px;padding:0 8px;font-size:29px;font-weight:300}
+.top-right{right:15px;padding:0 5px;font-size:17px;letter-spacing:.1em}
+.top-left.disabled{opacity:.28;pointer-events:none}
+
+.quiz{padding:22px 52px 80px;min-height:calc(100vh - 76px)}
+.progress{height:6px;background:#eadfe5;border-radius:99px;overflow:hidden;margin-top:2px}
+.progress>i{display:block;height:100%;background:var(--rose);width:0;transition:width .2s ease}
+
+.meta{
+  display:flex;justify-content:space-between;align-items:center;
+  color:#887881;font-family:Georgia,"Times New Roman",serif;
+  font-size:13px;letter-spacing:.09em;margin-top:27px;
+}
+.question{
+  margin:74px 0 64px;
+  font-family:"Songti SC","STSong","Noto Serif CJK SC","Source Han Serif SC",serif;
+  font-size:29px;font-weight:700;line-height:1.62;letter-spacing:.015em;
+}
+.answer-wrap{min-height:245px}
+
+.scale{
+  padding:0 4px;
+}
+.scale-line{
+  height:2px;background:#e2cfd7;position:relative;
+}
+.points{
+  display:grid;grid-template-columns:repeat(5,1fr);position:relative;top:-23px;
+}
+.point{
+  width:49px;height:49px;border-radius:50%;background:#fff;border:3px solid #d3d0d1;
+  justify-self:center;cursor:pointer;transition:.16s ease;
+}
+.point.mid{width:41px;height:41px;margin-top:4px}
+.point.active{
+  border-color:var(--rose);background:#fff4f6;
+  box-shadow:0 0 0 6px rgba(185,65,92,.08);
+}
+.point:hover{transform:scale(1.04)}
+.scale-labels{display:flex;justify-content:space-between;margin-top:13px;font-size:16px;color:#998b91}
+.scale-labels strong{font-weight:600;color:var(--rose)}
+
+.choices{display:grid;gap:12px;margin-top:3px}
+.choice{
+  width:100%;text-align:left;padding:16px 17px;border:1px solid #ded3d8;
+  border-radius:14px;background:rgba(255,255,255,.84);cursor:pointer;
+  transition:.15s ease;
+}
+.choice:hover{border-color:#c6b5bd;transform:translateY(-1px)}
+.choice.active{border-color:var(--rose);background:#fff0f3;box-shadow:0 10px 24px rgba(185,65,92,.06)}
+.choice .lead{font-weight:700;font-size:15px;margin-bottom:5px}
+.choice .desc{font-size:13px;color:#83757d;line-height:1.55}
+
+.nav-row{display:grid;grid-template-columns:120px 1fr;gap:10px;margin-top:34px}
+.back-bottom{height:66px;border:1px solid #d9cbd1;background:#fff;color:#5c4b53;font-size:18px;font-weight:700;cursor:pointer}
+.back-bottom:disabled{opacity:.35;cursor:not-allowed}
+.next{
+  width:100%;height:66px;margin-top:0;border:0;border-radius:0;
+  background:#1d1518;color:#fff;font-size:20px;font-weight:700;cursor:pointer;
+}
+.next:disabled{opacity:.38;cursor:not-allowed}
+.hint{text-align:center;margin-top:13px;color:#a08f97;font-size:12px}
+
+.result{
+  min-height:calc(100vh - 76px);background:var(--dark);color:#f8f0f2;
+  padding:42px 34px 100px;
+}
+.result-inner{max-width:690px;margin:0 auto}
+.kicker{text-align:center;color:#d291a2;font-family:Georgia,serif;font-size:14px;letter-spacing:.22em}
+.result-title{
+  text-align:center;font-family:"Songti SC","STSong","Noto Serif CJK SC",serif;
+  font-size:44px;line-height:1.23;margin:15px 0 32px;
+}
+.type-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.type-card{
+  border:1px solid #514149;background:#21191d;min-height:190px;
+  padding:28px 20px;text-align:center;
+}
+.type-card.main{background:#51232d;border-color:#a56172}
+.type-card small{display:block;color:#a99da1;font-size:12px;margin-bottom:24px}
+.type-card.main small{color:#e0a8b5}
+.type-card h2{
+  margin:0 0 9px;font-size:31px;
+  font-family:"Songti SC","STSong","Noto Serif CJK SC",serif;
+}
+.type-card.main h2{color:#f0a2b6}
+.type-score{font-size:22px;color:#c8bdc1}
+.type-gap{text-align:center;color:#aaa0a5;font-size:15px;margin:25px 0 45px}
+.hr{height:1px;background:#36272c;margin:0 0 34px}
+.s-title{font-size:22px;color:#ee9fb3;margin:0 0 6px}
+.s-sub{color:#93878c;font-size:14px;margin-bottom:22px}
+
+.radar-wrap{display:flex;justify-content:center}
+.radar{width:100%;max-width:630px;height:auto}
+.r-grid{fill:none;stroke:#57484d;stroke-width:1}
+.r-axis{stroke:#493b40;stroke-width:1}
+.r-area{fill:rgba(218,88,115,.19);stroke:#dc6682;stroke-width:3}
+.r-label{fill:#f1e9eb;font-size:13px;font-weight:700}
+.r-value{fill:#eea0b3;font-size:13px;font-weight:800}
+
+.top3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:20px 0 40px}
+.top3 .item{background:#21191d;border:1px solid #49373c;padding:14px 10px;text-align:center}
+.top3 span{display:block;color:#968a8e;font-size:11px;margin-bottom:6px}
+.top3 b{font-size:15px}
+.top3 em{display:block;font-style:normal;color:#eda2b6;margin-top:6px;font-size:13px}
+
+.detail{border-top:1px solid #34272b;padding:22px 0}
+.d-head{display:flex;justify-content:space-between;align-items:end;gap:12px}
+.d-head h3{margin:0;font-size:19px}
+.d-score{font-size:26px;font-weight:800}
+.d-bar{height:8px;background:#2a2023;border-radius:99px;overflow:hidden;margin:11px 0 12px}
+.d-bar i{display:block;height:100%;background:linear-gradient(90deg,#b9afb2,#efa1b5)}
+.detail p{margin:0;color:#b9adb2;line-height:1.85;font-size:14px}
+
+.profile{
+  margin-top:28px;background:#21191d;border:1px solid #49373d;padding:23px;
+}
+.profile h3{margin:0;color:#ee9fb3;font-size:18px}
+.profile p{margin:10px 0 0;color:#c8bdc1;line-height:1.9;font-size:14px}
+.tags{display:flex;flex-wrap:wrap;gap:8px;margin-top:15px}
+.tag{border:1px solid #5c454c;border-radius:999px;padding:7px 10px;color:#ddcdd2;font-size:12px}
+
+.pay{margin-top:30px;padding:23px;background:#382027;border:1px solid #6a3d49}
+.pay h3{margin:0 0 7px;font-size:20px}.pay p{margin:0;color:#d0c0c5;line-height:1.7;font-size:13px}
+.price{font-size:30px;font-weight:900;margin:15px 0;color:#fff}
+.pay-main{width:100%;height:53px;border:0;background:#e9a0b3;color:#24181c;font-weight:800;cursor:pointer}
+.action-row{display:flex;gap:10px;margin-top:11px}
+.action-row button{
+  flex:1;height:48px;border:1px solid #5a434a;background:transparent;color:#f2e9ec;cursor:pointer
+}
+.foot{text-align:center;color:#776b70;font-size:11px;line-height:1.7;margin-top:25px}
+
+.hidden{display:none!important}
+@media(max-width:600px){
+  .nav-row{grid-template-columns:105px 1fr}
+  .quiz{padding-left:27px;padding-right:27px}
+  .question{font-size:25px;margin-top:56px}
+  .result{padding-left:18px;padding-right:18px}
+  .result-title{font-size:36px}
+  .type-grid{gap:10px}
+  .type-card{padding:22px 11px;min-height:175px}
+  .type-card h2{font-size:26px}
+  .top3{gap:7px}.top3 .item{padding:12px 6px}.top3 b{font-size:14px}
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="top">
+    <button class="top-left hidden" id="backBtn" aria-label="返回">‹</button>
+    <div class="top-title">你的危险魅力</div>
+    <button class="top-right" aria-label="菜单">•••</button>
+  </header>
+
+  <section class="quiz" id="quizView">
+    <div class="progress"><i id="progressFill"></i></div>
+    <div class="meta"><span id="metaQ">QUESTION 1</span><span id="metaN">1 / 35</span></div>
+    <div class="question" id="question"></div>
+    <div class="answer-wrap" id="answerArea"></div>
+    <div class="nav-row">
+  <button class="back-bottom" id="backBottom" disabled>上一题</button>
+  <button class="next" id="nextBtn" disabled>下一题</button>
+</div>
+    <div class="hint">请选择最符合你真实状态的答案，没有标准答案。</div>
+  </section>
+
+  <section class="result hidden" id="resultView">
+    <div class="result-inner">
+      <div class="kicker">YOUR DANGEROUS CHARM</div>
+      <div class="result-title">你的危险魅力结果</div>
+
+      <div class="type-grid">
+        <div class="type-card main">
+          <small>你的核心类型</small>
+          <h2 id="mainType">—</h2>
+          <div class="type-score" id="mainScore">—</div>
+        </div>
+        <div class="type-card">
+          <small>你的第二倾向</small>
+          <h2 id="secondType">—</h2>
+          <div class="type-score" id="secondScore">—</div>
+        </div>
+      </div>
+      <div class="type-gap" id="typeGap"></div>
+
+      <div class="hr"></div>
+      <h2 class="s-title">十四维人格雷达</h2>
+      <div class="s-sub">你的魅力不是单一标签，而是一组倾向的组合。</div>
+      <div class="radar-wrap"><svg class="radar" id="radar" viewBox="0 0 640 640"></svg></div>
+
+      <div class="top3" id="top3"></div>
+
+      <div class="hr"></div>
+      <h2 class="s-title">14维详细评分</h2>
+      <div class="s-sub">高低仅代表倾向强弱，不代表好坏。</div>
+      <div id="details"></div>
+
+      <div class="profile">
+        <h3 id="profileTitle"></h3>
+        <p id="profileText"></p>
+        <div class="tags" id="tags"></div>
+      </div>
+
+      <div class="pay">
+        <h3>🔒 完整 AI 报告</h3>
+        <p>这里可以继续接真实支付：用户购买后生成专属长报告、吸引模式、危险魅力场景、容易让哪类人上头等内容。</p>
+        <div class="price">¥19.9</div>
+        <button class="pay-main" id="unlockBtn">模拟解锁完整报告</button>
+        <div class="action-row">
+          <button id="shareBtn">分享结果</button>
+          <button id="restartBtn">重新测试</button>
+        </div>
+      </div>
+      <div class="foot">娱乐性人格测试，仅用于自我探索；其中人格标签为产品内的趣味命名，不代表心理或医学诊断。</div>
+    </div>
+  </section>
+</div>
+
+<script>
+const dims=[
+ {n:"主导欲",d:"倾向于主动定节奏、做决定、推动关系前进。"},
+ {n:"顺从感",d:"对明确带领、照顾和框架的接受度。"},
+ {n:"占有欲",d:"希望自己在重要关系里拥有特殊位置的程度。"},
+ {n:"嫉妒敏感",d:"对竞争、第三者信号与关系变化的敏感度。"},
+ {n:"情绪烈度",d:"亲密关系中情绪起伏的幅度与投入强度。"},
+ {n:"依恋需求",d:"对稳定回应、陪伴、确认感和亲密连接的需求。"},
+ {n:"暧昧主动",d:"愿意主动制造见面、暗示和关系推进的程度。"},
+ {n:"边界感",d:"在亲密与自我之间维持清晰边界的能力。"},
+ {n:"反差感",d:"外在形象与真实一面之间的切换与反差程度。"},
+ {n:"神秘感",d:"保留信息、慢慢展示自己的程度。"},
+ {n:"认可需求",d:"希望被注意、肯定、重视或成为特殊对象的需求。"},
+ {n:"互动刺激",d:"对新鲜感、拉扯、游戏感和高强度互动的偏好。"},
+ {n:"共情度",d:"捕捉情绪、理解细节和读取气氛变化的倾向。"},
+ {n:"松弛度",d:"面对不确定和关系推进时保持自然、不急于求证的程度。"}
+];
+
+const qs=[
+ {t:"s",q:"当你想要见暧昧对象的时候，你会直接约 TA 吗？",w:{6:1,13:-.4}},
+ {t:"s",q:"聊天时，我喜欢让对方猜一点，而不是把所有想法一次说完。",w:{9:1,8:.35}},
+ {t:"s",q:"如果对方和别人走得很近，我会明显在意。",w:{3:1,2:.8,4:.6}},
+ {t:"s",q:"在关系里，我更喜欢由自己来决定下一步怎么走。",w:{0:1,7:.3}},
+ {t:"s",q:"如果有人明确告诉我“你听我的就好”，我会觉得很有安全感。",w:{1:1,5:.35}},
+ {t:"s",q:"我很容易从语气、回复速度、表情等细节察觉一个人的态度变化。",w:{12:1,3:.5}},
+ {t:"s",q:"我会享受关系里一点点“拉扯感”。",w:{11:1,8:.45,4:.4}},
+ {t:"s",q:"我喜欢在关键时刻突然表现出与平常完全不同的一面。",w:{8:1,9:.2}},
+ {t:"s",q:"当我喜欢一个人时，我希望自己对 TA 来说是特别的。",w:{10:1,2:.7}},
+ {t:"s",q:"即使关系不确定，我也能比较自然地等一等，而不是马上追问结果。",w:{13:1,7:.4,3:-.45}},
+ {t:"s",q:"我喜欢对方主动表达“想见我”“想我”“需要我”。",w:{5:1,10:.45}},
+ {t:"s",q:"如果我很在意一个人，我会主动制造两个人单独相处的机会。",w:{6:1,5:.3}},
+ {t:"s",q:"我会故意留一点悬念，让对方对我产生更多好奇。",w:{9:1,11:.35}},
+ {t:"s",q:"我对“被别人需要”这件事，会产生明显的满足感。",w:{10:1,5:.5}},
+ {t:"s",q:"别人越是看起来不容易得到，我反而越容易被吸引。",w:{11:1,9:.5}},
+ {t:"s",q:"发生矛盾时，我更倾向于直接把问题说清楚。",w:{7:1,0:.35,13:.2}},
+ {t:"s",q:"如果对方突然冷下来，我会忍不住反复回想是不是自己做错了什么。",w:{3:1,5:.8,4:.6}},
+ {t:"s",q:"我希望在一段关系里拥有比较明确的话语权。",w:{0:1,10:.35}},
+ {t:"s",q:"我很容易因为一句暧昧的话开心很久。",w:{4:.75,5:1,10:.35}},
+ {t:"s",q:"我不会因为喜欢一个人，就轻易改变自己的原则和生活节奏。",w:{7:1,13:.55}},
+ {t:"s",q:"别人越能准确读懂我，我越容易产生信任感。",w:{12:.8,5:.7,9:-.4}},
+ {t:"s",q:"我喜欢关系中有一点新鲜、刺激、不可预测。",w:{11:1,4:.5,13:-.2}},
+ {t:"s",q:"我会很在意自己在别人眼里的形象。",w:{10:1,8:.25}},
+ {t:"s",q:"即使我很喜欢一个人，也不会一直秒回或围着 TA 转。",w:{13:1,9:.45,5:-.25}},
+ {t:"s",q:"当我足够喜欢时，我愿意把自己更脆弱的一面展示给对方。",w:{5:.8,12:1,8:.35}},
+ {t:"c",q:"你发现暧昧对象突然和别人约会，你第一反应更像：",o:[
+  ["A 先观察，不马上表现","我想先弄清楚是不是我理解的那样。",{9:.7,7:.5,13:.4}],
+  ["B 明显吃醋，心里开始打鼓","我会很在意，而且容易脑补。",{3:1,4:.8,2:.7}],
+  ["C 直接把人约出来聊聊","不喜欢猜，想把主动权拿回来。",{0:1,6:.6,7:.7}],
+  ["D 表面无所谓，转身却有点难受","我会装得很稳，但情绪其实很明显。",{8:1,4:1,5:.55}]
+ ]},
+ {t:"c",q:"如果对方突然对你说“我其实很吃你这一套”，你会：",o:[
+  ["A 笑而不答","留一点空间，让对方自己想。",{9:1,13:.6}],
+  ["B 顺势撩回去","既然都说到这里了，那就继续玩。",{11:1,6:.65,8:.5}],
+  ["C 认真问清楚“哪一套？”","我想知道具体被什么吸引。",{10:.7,12:1,0:.3}],
+  ["D 瞬间心软","这句话会让我产生被看见的感觉。",{5:1,10:.55,4:.55}]
+ ]},
+ {t:"c",q:"朋友说你谈恋爱以后会变成“另外一个人”，你觉得最像：",o:[
+  ["A 更有主见、更爱安排事情","我会自然地进入主导模式。",{0:1,10:.35}],
+  ["B 更黏、更容易吃醋","喜欢一个人后，我的情绪会放大。",{5:1,3:1,4:.7}],
+  ["C 外表冷静，私下很黏","典型反差。",{8:1,5:.75}],
+  ["D 反而更松弛、更随缘","越喜欢越自然，不太想控制结果。",{13:1,7:.5}]
+ ]},
+ {t:"c",q:"你最容易被哪种“危险信号”吸引？",o:[
+  ["A 很有距离感，别人都说 TA 难懂","越有秘密感越想靠近。",{9:1,11:.55}],
+  ["B 很有主见，气场很强","会让我觉得有力量。",{0:1,1:.75}],
+  ["C 情绪浓度高、爱得很用力","高浓度关系会让我上头。",{4:1,5:.7,2:.6}],
+  ["D 平时很乖，关键时刻很有反差","这种切换很致命。",{8:1,11:.6}]
+ ]},
+ {t:"c",q:"当你特别喜欢一个人，你最可能做的是：",o:[
+  ["A 主动创造见面机会","我会找理由，也会直接约。",{6:1,0:.55}],
+  ["B 默默记住 TA 的很多细节","我会观察，也会把情绪藏起来。",{12:1,5:.55,9:.5}],
+  ["C 试探 TA 是否在乎我","我会想确认自己是不是特殊的。",{10:1,3:.8,2:.65}],
+  ["D 故意保持一点距离","我不想一下子暴露全部底牌。",{9:1,13:.75,8:.4}]
+ ]},
+ {t:"c",q:"如果别人把你形容成一种“危险魅力”，你更愿意是哪种？",o:[
+  ["A 高冷神秘","不是冷，只是没那么快打开。",{9:1,7:.45}],
+  ["B 让人上头","有一点拉扯也挺有趣。",{11:1,4:.7}],
+  ["C 强势主导","我确实喜欢把关系推进起来。",{0:1,10:.55}],
+  ["D 反差治愈","平时克制，熟了以后完全不同。",{8:1,12:.6}]
+ ]},
+ {t:"c",q:"你更希望别人怎样记住你？",o:[
+  ["A “TA真的很难忘。”","我希望留下很长的余韵。",{9:1,8:.55}],
+  ["B “和TA在一起很容易上头。”","记忆最好带一点情绪波动。",{11:1,4:.65}],
+  ["C “TA很有自己的主见。”","别人会知道我不是随便被带着走的人。",{0:1,7:.6}],
+  ["D “没想到TA居然还有这一面。”","我最喜欢别人被我的反差击中。",{8:1,10:.4}]
+ ]},
+ {t:"c",q:"发生矛盾后，对方迟迟不回，你会：",o:[
+  ["A 给空间，等对方想说再说","我不想把关系逼进死角。",{13:1,7:.55}],
+  ["B 越等越焦虑","我会很在意对方是不是不在乎了。",{5:1,3:.9,4:.7}],
+  ["C 主动结束冷战","不喜欢悬着，问题要处理。",{0:.8,7:1,6:.55}],
+  ["D 表面冷静，内心戏很丰富","我可能不会追，但会想很多。",{8:.8,4:1,9:.55}]
+ ]},
+ {t:"c",q:"你对“谁掌握关系节奏”这件事更接近：",o:[
+  ["A 我来定，效率最高","我喜欢知道下一步是什么。",{0:1,7:.55}],
+  ["B 对方来定，我比较舒服","有人带着走反而轻松。",{1:1,5:.45}],
+  ["C 谁更主动谁就多一点","我享受互动，不太固定。",{11:.8,6:.55,13:.35}],
+  ["D 看当时谁更需要谁","关系里本来就会流动。",{12:.6,10:.45,13:.5}]
+ ]},
+ {t:"c",q:"你最想获得的关系体验是：",o:[
+  ["A 被坚定地选择","我希望自己是特殊而确定的。",{5:1,10:.85,2:.65}],
+  ["B 被理解和读懂","不用解释太多，对方就知道。",{12:1,5:.7}],
+  ["C 被追逐、被挑战","有来有回才有意思。",{11:1,0:.4,6:.5}],
+  ["D 被尊重边界，同时有心动感","亲密和自由最好同时存在。",{7:1,13:.8,4:.35}]
+ ]}
+];
+
+const types=[
+ ["S·主导型",{0:1.35,10:.45,6:.3,7:.15},"你天然擅长给关系定方向。你不一定强势，但你喜欢事情有节奏、有反馈、有人负责下一步。你的魅力更接近“确定感”。"],
+ ["M·高顺从型",{1:1.35,5:.55,12:.3,0:-.15},"你更容易在被照顾、被引导、被明确对待时产生放松感。你并不是没有主见，而是当对方足够可靠时，你愿意把一部分控制权交出去。"],
+ ["病娇感·高浓度型",{3:1.2,4:1.0,5:.75,2:.65,10:.35},"你的关系浓度很高。一旦认真，你很容易把注意力、情绪和安全感集中到一个人身上。这里的“病娇感”只是娱乐标签，指占有、敏感和高依恋的组合。"],
+ ["反差魅惑型",{8:1.4,9:.45,12:.3,11:.25},"你的杀伤力来自“没想到”。平时越克制，关键时刻的温柔、锋利、主动或脆弱就越容易被放大。"],
+ ["NDP感·聚光灯型",{10:1.35,0:.3,2:.45,8:.25},"你很在意自己在关系中的特殊位置，希望被注意、被认可、被看见。这里的标签只是描述较强的关注与特殊感需求。"],
+ ["神秘高冷型",{9:1.4,13:.45,7:.3,6:.1},"你不太会一次性交出全部信息。你给人的空间很多，也正因为如此，别人常常会自己脑补、自己探索，于是你容易形成离开以后更想的后劲。"],
+ ["暧昧高手型",{11:1.2,6:.75,8:.5,10:.25},"你对互动节奏、试探和气氛很敏感。你不一定喜欢承诺，但很会让一段关系在“差一点就更近”的位置保持张力。"],
+ ["共情黏人型",{12:1.1,5:1.05,4:.55,3:.4},"你对别人细微的情绪变化很敏感，也更容易建立深度连接。你的魅力，是让人感觉自己被认真对待、被读懂了。"],
+ ["松弛自由型",{13:1.35,7:.75,9:.45,5:-.15,3:-.2},"你很少把自己全部情绪都押在一段关系上。你有自己的节奏，所以反而容易制造一种和你相处没有压力的吸引力。"],
+ ["双面危险型",{8:.9,11:.65,3:.6,0:.55,9:.35},"你不是单一方向的人：可以很松，也可以很强；可以很冷，也可以很黏。真正让人上头的是别人很难提前猜到你下一秒会切换成哪个版本。"]
+];
+
+function typeScore(s,w){let a=0,b=0;for(const k in w){a+=s[+k]*w[k];b+=Math.abs(w[k]);}return Math.max(0,Math.min(100,Math.round(a/Math.max(.1,b))))}
+
+let idx=0, answers=Array(qs.length).fill(null), sums=Array(14).fill(0), weights=Array(14).fill(0);
+
+function drawQuestion(){
+  const q=qs[idx];
+  metaQ.textContent=`QUESTION ${idx+1}`;
+  metaN.textContent=`${idx+1} / ${qs.length}`;
+  progressFill.style.width=`${((idx+1)/qs.length)*100}%`;
+  question.textContent=q.q;
+  answerArea.innerHTML="";
+  nextBtn.disabled=answers[idx]===null;
+  backBtn.classList.toggle("disabled",idx===0);
+  backBottom.disabled=idx===0;
+
+  if(q.t==="s"){
+    const wrap=document.createElement("div");wrap.className="scale";
+    const line=document.createElement("div");line.className="scale-line";wrap.appendChild(line);
+    const points=document.createElement("div");points.className="points";
+    for(let i=1;i<=5;i++){
+      const b=document.createElement("button");b.className="point"+(i===3?" mid":"");
+      if(answers[idx]===i)b.classList.add("active");
+      b.onclick=()=>{answers[idx]=i;[...points.children].forEach(x=>x.classList.remove("active"));b.classList.add("active");nextBtn.disabled=false};
+      points.appendChild(b);
+    }
+    wrap.appendChild(points);
+    const labs=document.createElement("div");labs.className="scale-labels";labs.innerHTML="<span>完全不像我</span><strong>非常像我</strong>";
+    wrap.appendChild(labs);
+    answerArea.appendChild(wrap);
+  }else{
+    const grid=document.createElement("div");grid.className="choices";
+    q.o.forEach((o,i)=>{
+      const b=document.createElement("button");b.className="choice";
+      if(answers[idx]===i)b.classList.add("active");
+      b.innerHTML=`<div class="lead">${o[0]}</div><div class="desc">${o[1]}</div>`;
+      b.onclick=()=>{answers[idx]=i;[...grid.children].forEach(x=>x.classList.remove("active"));b.classList.add("active");nextBtn.disabled=false};
+      grid.appendChild(b);
+    });
+    answerArea.appendChild(grid);
+  }
+}
+function recalc(){
+  sums=Array(14).fill(0);weights=Array(14).fill(0);
+  qs.forEach((q,i)=>{
+    const a=answers[i];if(a===null)return;
+    if(q.t==="s"){
+      const x=(a-1)/4;
+      for(const d in q.w){sums[+d]+=x*q.w[d];weights[+d]+=Math.abs(q.w[d])}
+    }else{
+      for(const d in Object.keys(q.o[a][2])){sums[+d]+=q.o[a][2][d];weights[+d]+=1}
+    }
+  })
+}
+function getScores(){recalc();return sums.map((x,i)=>Math.max(0,Math.min(100,Math.round(100*x/Math.max(.1,weights[i])))))}
+
+nextBtn.onclick=()=>{
+  if(answers[idx]===null)return;
+  if(idx<qs.length-1){idx++;drawQuestion();window.scrollTo({top:0,behavior:"smooth"})}
+  else showResults();
+}
+backBtn.onclick=()=>{
+  if(idx>0){idx--;drawQuestion();window.scrollTo({top:0,behavior:"smooth"})}
+};
+backBottom.onclick=()=>{
+  if(idx>0){idx--;drawQuestion();window.scrollTo({top:0,behavior:"smooth"})}
+};
+
+function showResults(){
+  const s=getScores(), ranked=types.map((t,i)=>({i,v:typeScore(s,t[1])})).sort((a,b)=>b.v-a.v);
+  mainType.textContent=types[ranked[0].i][0];mainScore.textContent=ranked[0].v+"分";
+  secondType.textContent=types[ranked[1].i][0];secondScore.textContent=ranked[1].v+"分";
+  typeGap.textContent=`核心类型与第二倾向的差异：${ranked[0].v-ranked[1].v} 分`;
+  drawRadar(s);
+  top3.innerHTML=s.map((v,i)=>({v,i})).sort((a,b)=>b.v-a.v).slice(0,3).map((x,j)=>`<div class="item"><span>TOP ${j+1}</span><b>${dims[x.i].n}</b><em>${x.v}分</em></div>`).join("");
+  details.innerHTML=s.map((v,i)=>{
+    const level=v>=75?"很高":v>=55?"偏高":v>=40?"中等":"偏低";
+    return `<div class="detail"><div class="d-head"><h3>${dims[i].n}</h3><div class="d-score">${v}</div></div>
+    <div class="d-bar"><i style="width:${v}%"></i></div><p><strong style="color:#e7dde1">${level}</strong> · ${dims[i].d} ${note(i,v)}</p></div>`;
+  }).join("");
+  profileTitle.textContent=types[ranked[0].i][0]+" · 核心画像";profileText.textContent=types[ranked[0].i][2];
+  const tags=["神秘感","反差感","关系主导","边界","高浓度","松弛感","暧昧张力","共情"];
+  tags.sort(()=>Math.random()-.5);
+  document.getElementById("tags").innerHTML=tags.slice(0,4).map(x=>`<span class="tag">${x}</span>`).join("");
+  quizView.classList.add("hidden");resultView.classList.remove("hidden");backBtn.classList.add("disabled");
+  window.scrollTo({top:0,behavior:"smooth"});
+}
+function note(i,v){
+  const hi=["你更容易自然地站到带节奏的位置。","你对明确带领更容易产生放松和安全感。","你对“特殊位置”的需求比较明显。","关系里的微小变化更容易被你感知。","心动和不安都更容易被你放大。","稳定回应会明显提升你的安全感。","遇到喜欢的人，你更愿意把喜欢变成行动。","即使亲密，你也会比较在意自己的边界。","你的突然切换很容易制造“没想到”的效果。","你越慢慢打开，别人越容易产生探索欲。","被看见、被认可会明显增强你的投入感。","你对新鲜感、刺激和互动张力的接受度较高。","你比较容易捕捉别人情绪里的细节。","你与不确定相处时通常更自然。"];
+  const lo=["你更习惯先观察，再决定是否主动。","你更习惯保留自己的主动权。","你不太容易把关系理解成占有。","你通常不会被单一的小信号牵着走。","你对关系波动的放大程度比较低。","你不太依赖高频确认来维持稳定。","除非信号明确，否则你不会轻易推进。","你比较容易守住个人空间。","你的表现通常比较一致，不需要靠反差吸引人。","你更偏向直接表达，而不是长期留白。","你更看重实际相处而不是外部认可。","你更喜欢稳定自然，不需要大量刺激。","你更关注事实，不容易被微小情绪牵着走。","你比多数人更想尽快知道答案。"];
+  return v>=65?hi[i]:v<=35?lo[i]:"这一维度比较中性，会随着对象和场景变化。";
+}
+function drawRadar(s){
+  const svg=document.getElementById("radar");svg.innerHTML="";
+  const cx=320,cy=320,R=220,n=s.length,pts=(r)=>s.map((_,i)=>{const a=-Math.PI/2+i*2*Math.PI/n;return [cx+Math.cos(a)*R*r,cy+Math.sin(a)*R*r]});
+  for(const r of [.2,.4,.6,.8,1]){
+    const poly=document.createElementNS("http://www.w3.org/2000/svg","polygon");poly.setAttribute("points",pts(r).map(p=>p.join(",")).join(" "));poly.setAttribute("class","r-grid");svg.appendChild(poly)
+  }
+  pts(1).forEach(p=>{const l=document.createElementNS("http://www.w3.org/2000/svg","line");l.setAttribute("x1",cx);l.setAttribute("y1",cy);l.setAttribute("x2",p[0]);l.setAttribute("y2",p[1]);l.setAttribute("class","r-axis");svg.appendChild(l)});
+  const data=s.map((v,i)=>{const a=-Math.PI/2+i*2*Math.PI/n,r=R*v/100;return [cx+Math.cos(a)*r,cy+Math.sin(a)*r]});
+  const area=document.createElementNS("http://www.w3.org/2000/svg","polygon");area.setAttribute("points",data.map(p=>p.join(",")).join(" "));area.setAttribute("class","r-area");svg.appendChild(area);
+  pts(1.18).forEach((p,i)=>{
+    const t=document.createElementNS("http://www.w3.org/2000/svg","text");t.setAttribute("x",p[0]);t.setAttribute("y",p[1]);t.setAttribute("text-anchor",p[0]<cx-20?"end":p[0]>cx+20?"start":"middle");t.setAttribute("dominant-baseline","middle");t.setAttribute("class","r-label");t.textContent=dims[i].n;svg.appendChild(t);
+    const v=document.createElementNS("http://www.w3.org/2000/svg","text");v.setAttribute("x",p[0]);v.setAttribute("y",p[1]+17);v.setAttribute("text-anchor",p[0]<cx-20?"end":p[0]>cx+20?"start":"middle");v.setAttribute("class","r-value");v.textContent=s[i];svg.appendChild(v);
+  })
+}
+document.getElementById("restartBtn").onclick=()=>location.reload();
+document.getElementById("shareBtn").onclick=async()=>{
+  const title=mainType.textContent;const text=`我的危险魅力是「${title}」｜来测测你的危险魅力`;
+  if(navigator.share){try{await navigator.share({title:"你的危险魅力是什么？",text,url:location.href})}catch(e){}}
+  else{try{await navigator.clipboard.writeText(text+" "+location.href);alert("结果文案已复制")}catch(e){alert(text)}}
+};
+document.getElementById("unlockBtn").onclick=()=>{
+  unlockBtn.textContent="已解锁 ✓（演示）";unlockBtn.disabled=true;
+  alert("这里已预留支付入口。正式上线时接入真实支付，再调用 AI 生成完整长报告。");
+}
+drawQuestion();
+</script>
+</body>
+</html>
